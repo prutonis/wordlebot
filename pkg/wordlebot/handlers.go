@@ -2,7 +2,6 @@ package wordlebot
 
 import (
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/yanzay/tbot/v2"
@@ -18,6 +17,14 @@ func checkChatCreated(chatId string) *chat {
 		Chats[chatId] = Chat
 	}
 	return Chat
+}
+
+func (a *application) helpHandler(m *tbot.Message) {
+	a.client.SendMessage(m.Chat.ID, `Wordle Bot menu:
+	/help - display help
+	/start - start new game
+	/giveup - give up and show the number
+	/lang - change dictionary language [en, ro]`)
 }
 
 func (a *application) startHandler(m *tbot.Message) {
@@ -37,14 +44,15 @@ func (a *application) startHandler(m *tbot.Message) {
 }
 
 func (a *application) giveUpHandler(m *tbot.Message) {
-	Game := checkChatCreated(m.Chat.ID).game
+	Chat := checkChatCreated(m.Chat.ID)
+	Game := Chat.game
 	fmt.Println("giveup handler")
 	if Game != nil {
 		if Game.isEnded() {
-			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("Game is ended. The word was #%s. 🚀 Start new one with /start", Game.word))
+			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("Game is ended. The word was '%s'. 🚀 Start new one with /start", Game.word))
 		} else {
 			Game.gc = 10
-			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("😎 👎 You are weak. Read more books!. The word was '%s' https://dexonline.ro/definitie/%s", Game.word, url.QueryEscape(Game.word)))
+			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("😎 👎 You are weak. Read more books!\nThe word was '%s'\n%s", Game.word, Chat.lang.GetDictUrl(Game.word)))
 		}
 	} else {
 		a.client.SendMessage(m.Chat.ID, "No game found. 🚀 Start one with /start")
@@ -61,6 +69,33 @@ func (a *application) messagesHandler(m *tbot.Message) {
 		msg := ListGuesses(Game)
 		a.client.SendMessage(m.Chat.ID, msg, tbot.OptParseModeMarkdown)
 	}
+}
+
+func (a *application) languageHandler(m *tbot.Message) {
+	cfg := utils.GetConfig()
+	lineBtns := make([]tbot.InlineKeyboardButton, len(cfg.Langs))
+	i := 0
+	for k, _ := range cfg.Langs {
+		lineBtns[i] = tbot.InlineKeyboardButton{
+			Text:         strings.ToUpper(k),
+			CallbackData: k,
+		}
+		i++
+	}
+	buttons := tbot.InlineKeyboardMarkup{
+		InlineKeyboard: [][]tbot.InlineKeyboardButton{
+			lineBtns,
+		},
+	}
+	a.client.SendMessage(m.Chat.ID, "Pick a language", tbot.OptInlineKeyboardMarkup(&buttons))
+}
+
+func (a *application) callbackHandler(cq *tbot.CallbackQuery) {
+	lang := cq.Data
+	currentChat := checkChatCreated(cq.Message.Chat.ID)
+	currentChat.lang = utils.GetConfig().Langs[lang]
+	a.client.DeleteMessage(cq.Message.Chat.ID, cq.Message.MessageID)
+	a.client.SendMessage(cq.Message.Chat.ID, "Selected dictionary language: "+lang)
 }
 
 func ListGuesses(Game *game) string {

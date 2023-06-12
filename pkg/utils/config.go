@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"net/url"
 	"sync"
 
 	"github.com/spf13/viper"
@@ -10,10 +12,11 @@ import (
 type WbLang struct {
 	Lang      string
 	WordCount int
+	DictUrl   string
 }
 
 type WbConfig struct {
-	Langs       []WbLang
+	Langs       map[string]*WbLang
 	strictWords bool
 }
 
@@ -30,12 +33,13 @@ func init() {
 
 func GetConfig() *WbConfig {
 	once.Do(func() {
-		instance = &WbConfig{}
-		langs := viper.GetStringSlice("words.langs")
-		for _, l := range langs {
-			wc := LineCounter(WordsFile(l))
-			lang := WbLang{Lang: l, WordCount: wc}
-			instance.Langs = append(instance.Langs, lang)
+		langsMap := viper.GetStringMapString("langs")
+		instance = &WbConfig{Langs: make(map[string]*WbLang, len(langsMap)), strictWords: false}
+		for k, v := range langsMap {
+			wc := LineCounter(WordsFile(k))
+			lang := WbLang{Lang: k, WordCount: wc, DictUrl: v}
+			//instance.Langs = append(instance.Langs, lang)
+			instance.Langs[lang.Lang] = &lang
 		}
 		if len(instance.Langs) == 0 {
 			panic("No word files found!")
@@ -45,5 +49,9 @@ func GetConfig() *WbConfig {
 }
 
 func (wc WbConfig) GetDefaultLang() *WbLang {
-	return &wc.Langs[0]
+	return wc.Langs["ro"]
+}
+
+func (wl WbLang) GetDictUrl(word string) string {
+	return fmt.Sprintf("%s%s", wl.DictUrl, url.QueryEscape(word))
 }

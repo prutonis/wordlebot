@@ -1,4 +1,5 @@
 title = "WordleBot"
 
-[words]
-langs = ["ro", "en"]
+[langs]
+ro = "https://dexonline.ro/definitie/"
+en = "https://www.merriam-webster.com/dictionary/"

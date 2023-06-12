@@ -14,7 +14,7 @@ import (
 type game struct {
 	word    string
 	letters map[string]int
-	guesses [6]string
+	guesses [10]string
 	gc      int
 }
 
@@ -49,10 +49,12 @@ func WordleBot() {
 	Chats = make(chats)
 	Bot = tbot.New(Token)
 	App.client = Bot.Client()
+	Bot.HandleMessage("/help", App.helpHandler)
 	Bot.HandleMessage("/start", App.startHandler)
 	Bot.HandleMessage("/giveup", App.giveUpHandler)
+	Bot.HandleMessage("/lang", App.languageHandler)
 	Bot.HandleMessage(".{5}$", App.messagesHandler)
-	//Bot.HandleCallback(App.callbackHandler)
+	Bot.HandleCallback(App.callbackHandler)
 	log.Fatal(Bot.Start())
 }
 
