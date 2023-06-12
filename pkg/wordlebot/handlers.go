@@ -23,10 +23,10 @@ func checkChatCreated(chatId string) *chat {
 
 func (a *application) helpHandler(m *tbot.Message) {
 	a.client.SendMessage(m.Chat.ID, `Wordle Bot menu:
-	/help - display help
-	/start - start new game
-	/giveup - give up and show the number
-	/lang - change dictionary language [en, ro]`)
+	/help - Display help
+	/start - Start new game
+	/giveup - Give up and show the word
+	/lang - Change dictionary language [en, ro]`)
 	logger.Info("HelpHandler", zap.String("username", m.From.Username))
 }
 
