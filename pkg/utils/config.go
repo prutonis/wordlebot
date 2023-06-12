@@ -13,14 +13,14 @@ type WbLang struct {
 }
 
 type WbConfig struct {
-	Langs []WbLang
-	Lang  *WbLang
+	Langs       []WbLang
+	strictWords bool
 }
 
 var instance *WbConfig
 var once sync.Once
 
-func LoadConfig() {
+func init() {
 	viper.AddConfigPath("./configs")
 	viper.SetConfigName("wordlebot") // Register config file name (no extension)
 	viper.SetConfigType("toml")      // Look for specific type
@@ -30,7 +30,6 @@ func LoadConfig() {
 
 func GetConfig() *WbConfig {
 	once.Do(func() {
-		LoadConfig()
 		instance = &WbConfig{}
 		langs := viper.GetStringSlice("words.langs")
 		for _, l := range langs {
@@ -41,7 +40,10 @@ func GetConfig() *WbConfig {
 		if len(instance.Langs) == 0 {
 			panic("No word files found!")
 		}
-		instance.Lang = &instance.Langs[0]
 	})
 	return instance
+}
+
+func (wc WbConfig) GetDefaultLang() *WbLang {
+	return &wc.Langs[0]
 }
