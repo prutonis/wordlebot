@@ -75,9 +75,9 @@ func (g game) isEnded() bool {
 	return g.gc > 5 || g.isGuessed()
 }
 
-func (g game) isGivenUp() bool {
-	return g.gc >= 10
-}
+// func (g game) isGivenUp() bool {
+// 	return g.gc >= 10
+// }
 
 func LetterCountMap(word string) map[string]int {
 	wordLetters := make(map[string]int)
