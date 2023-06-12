@@ -1,0 +1,6 @@
+{"level":"info","ts":"2023-06-12T16:52:43.684+0300","caller":"logger/logger.go:62","msg":"Config loaded."}
+{"level":"info","ts":"2023-06-12T16:52:43.685+0300","caller":"logger/logger.go:62","msg":"WordleBot started"}
+{"level":"info","ts":"2023-06-12T16:52:58.721+0300","caller":"logger/logger.go:62","msg":"HelpHandler","username":"g3todac"}
+{"level":"info","ts":"2023-06-12T16:53:08.764+0300","caller":"logger/logger.go:62","msg":"StartHandler","username":"g3todac"}
+{"level":"debug","ts":"2023-06-12T16:53:08.764+0300","caller":"logger/logger.go:66","msg":"Retrieve the {nthWord}-th word from file {fileName}"}
+{"level":"info","ts":"2023-06-12T16:53:08.765+0300","caller":"logger/logger.go:62","msg":"Game created","word":"iuțar","username":"g3todac"}

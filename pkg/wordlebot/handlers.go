@@ -49,7 +49,6 @@ func (a *application) startHandler(m *tbot.Message) {
 func (a *application) giveUpHandler(m *tbot.Message) {
 	Chat := checkChatCreated(m.Chat.ID)
 	Game := Chat.game
-	logger.Info("GiveUpHandler", zap.String("username", m.From.Username))
 	if Game != nil {
 		if Game.isEnded() {
 			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("Game is ended. The word was '%s'. 🚀 Start new one with /start\n%s", Game.word, Chat.lang.GetDictUrl(Game.word)))
@@ -57,8 +56,10 @@ func (a *application) giveUpHandler(m *tbot.Message) {
 			Game.gc = 10
 			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("😎 👎 You are weak. Read more books!\nThe word was '%s'\n%s", Game.word, Chat.lang.GetDictUrl(Game.word)))
 		}
+		logger.Info("GiveUpHandler", zap.String("username", m.From.Username), zap.String("word", Game.word))
 	} else {
 		a.client.SendMessage(m.Chat.ID, "No game found. 🚀 Start one with /start")
+		logger.Info("GiveUpHandler", zap.String("username", m.From.Username))
 	}
 }
 

@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 
@@ -14,7 +15,7 @@ func WordsFile(lang string) string {
 }
 
 func GetWord(fileName string, nthWord int) (string, error) {
-	logger.Debug(`Retrieve the {nthWord}-th word from file {fileName}`)
+	logger.Debug(fmt.Sprintf("Retrieve the %d-th word from file %s", nthWord, fileName))
 
 	// Open the file
 	file, err := os.Open(fileName)
