@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 
@@ -20,7 +19,7 @@ func GetWord(fileName string, nthWord int) (string, error) {
 	// Open the file
 	file, err := os.Open(fileName)
 	if err != nil {
-		fmt.Println("Error opening file:", err)
+		logger.Fatalf("Error opening file: %v", err)
 		return "", err
 	}
 	defer file.Close()
@@ -34,7 +33,6 @@ func GetWord(fileName string, nthWord int) (string, error) {
 	for scanner.Scan() {
 		line = scanner.Text()
 		lc++
-		//fmt.Println(line)
 		if lc > nthWord {
 			break
 		}
@@ -42,7 +40,7 @@ func GetWord(fileName string, nthWord int) (string, error) {
 
 	// Check for any errors encountered during scanning
 	if err := scanner.Err(); err != nil {
-		fmt.Println("Error scanning file:", err)
+		logger.Fatalf("Error scanning file: %v", err)
 	}
 	return line, err
 }

@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/yanzay/tbot/v2"
+	"go.uber.org/zap"
+	"moro.io/wordlebot/pkg/logger"
 	"moro.io/wordlebot/pkg/utils"
 )
 
@@ -25,15 +27,16 @@ func (a *application) helpHandler(m *tbot.Message) {
 	/start - start new game
 	/giveup - give up and show the number
 	/lang - change dictionary language [en, ro]`)
+	logger.Info("HelpHandler", zap.String("username", m.From.Username))
 }
 
 func (a *application) startHandler(m *tbot.Message) {
 	currentChat := checkChatCreated(m.Chat.ID)
-	fmt.Println("starthandler", m.Text)
+	logger.Info("StartHandler", zap.String("username", m.From.Username))
 	Game := currentChat.game
 	if Game == nil || Game.isEnded() {
 		Game = CreateGame(currentChat.lang)
-		fmt.Println("Game created ", Game, m.Chat.ID)
+		logger.Info("Game created", zap.String("word", Game.word), zap.String("username", m.From.Username))
 		currentChat.game = Game
 		a.client.SendMessage(m.Chat.ID, "A new game started. Try to guess the 5 letter word!")
 	} else {
@@ -46,10 +49,10 @@ func (a *application) startHandler(m *tbot.Message) {
 func (a *application) giveUpHandler(m *tbot.Message) {
 	Chat := checkChatCreated(m.Chat.ID)
 	Game := Chat.game
-	fmt.Println("giveup handler")
+	logger.Info("GiveUpHandler", zap.String("username", m.From.Username))
 	if Game != nil {
 		if Game.isEnded() {
-			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("Game is ended. The word was '%s'. 🚀 Start new one with /start", Game.word))
+			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("Game is ended. The word was '%s'. 🚀 Start new one with /start\n%s", Game.word, Chat.lang.GetDictUrl(Game.word)))
 		} else {
 			Game.gc = 10
 			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("😎 👎 You are weak. Read more books!\nThe word was '%s'\n%s", Game.word, Chat.lang.GetDictUrl(Game.word)))
@@ -60,14 +63,22 @@ func (a *application) giveUpHandler(m *tbot.Message) {
 }
 
 func (a *application) messagesHandler(m *tbot.Message) {
-	Game := checkChatCreated(m.Chat.ID).game
+	Chat := checkChatCreated(m.Chat.ID)
+	Game := Chat.game
 	uw := m.Text
-	fmt.Println("Received: ", m.Text)
 	if Game != nil && !Game.isEnded() && len([]rune(uw)) == 5 {
+		logger.Info("Guess attempt", zap.String("guess", uw), zap.String("username", m.From.Username))
 		Game.guesses[Game.gc] = uw
 		Game.gc++
 		msg := ListGuesses(Game)
 		a.client.SendMessage(m.Chat.ID, msg, tbot.OptParseModeMarkdown)
+		if Game.isGuessed() {
+			a.client.SendMessage(m.Chat.ID, fmt.Sprintf("🎉🥳🎉 %s guessed it! The word was '%s'\n%s", m.From.Username, Game.word, Chat.lang.GetDictUrl(Game.word)))
+			logger.Info("Word guessed", zap.String("guess", uw), zap.String("username", m.From.Username))
+		} else if Game.isEnded() {
+			a.client.SendMessage(m.Chat.ID, "😱 You lost! /giveup to see the word.")
+			logger.Info("Game lost", zap.String("guess", uw), zap.String("username", m.From.Username))
+		}
 	}
 }
 
@@ -88,6 +99,7 @@ func (a *application) languageHandler(m *tbot.Message) {
 		},
 	}
 	a.client.SendMessage(m.Chat.ID, "Pick a language", tbot.OptInlineKeyboardMarkup(&buttons))
+	logger.Info("LanguagetHandler", zap.String("username", m.From.Username))
 }
 
 func (a *application) callbackHandler(cq *tbot.CallbackQuery) {
@@ -96,6 +108,7 @@ func (a *application) callbackHandler(cq *tbot.CallbackQuery) {
 	currentChat.lang = utils.GetConfig().Langs[lang]
 	a.client.DeleteMessage(cq.Message.Chat.ID, cq.Message.MessageID)
 	a.client.SendMessage(cq.Message.Chat.ID, "Selected dictionary language: "+lang)
+	logger.Info("Selected language", zap.String("lang", lang), zap.String("username", cq.From.Username))
 }
 
 func ListGuesses(Game *game) string {
@@ -114,7 +127,6 @@ func ListGuesses(Game *game) string {
 			}
 			sb.WriteString(cl)
 		}
-		fmt.Println(sb.String())
 		sb.WriteString("\n")
 	}
 	return sb.String()

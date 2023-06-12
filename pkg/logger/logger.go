@@ -54,3 +54,7 @@ func Error(message string, fields ...zap.Field) {
 func Fatal(message string, fields ...zap.Field) {
 	zapLog.Fatal(message, fields...)
 }
+
+func Fatalf(message string, errs ...error) {
+	zapLog.Sugar().Fatalf(message, errs)
+}
