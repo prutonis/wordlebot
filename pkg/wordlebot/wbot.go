@@ -53,7 +53,7 @@ func WordleBot() {
 	Bot.HandleMessage("/start", App.startHandler)
 	Bot.HandleMessage("/giveup", App.giveUpHandler)
 	Bot.HandleMessage("/lang", App.languageHandler)
-	Bot.HandleMessage(".{5}$", App.messagesHandler)
+	Bot.HandleMessage("^.{5}$", App.messagesHandler)
 	Bot.HandleCallback(App.callbackHandler)
 	log.Fatal(Bot.Start())
 }

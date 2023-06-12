@@ -64,6 +64,7 @@ func (a *application) giveUpHandler(m *tbot.Message) {
 }
 
 func (a *application) messagesHandler(m *tbot.Message) {
+	logger.Debug("MessageHandler", zap.String("msg", m.Text), zap.String("username", m.From.Username))
 	Chat := checkChatCreated(m.Chat.ID)
 	Game := Chat.game
 	uw := m.Text
