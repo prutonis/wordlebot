@@ -22,4 +22,4 @@ go.work
 wordlebot.log
 
 # Secrets
-bot_token.txt
+.env
