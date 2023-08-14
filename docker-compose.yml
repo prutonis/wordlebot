@@ -2,4 +2,5 @@ services:
   wordlebot:
     container_name: wordlebot
     image: ghcr.io/prutonis/twordlebot:latest
-    
+    volumes:
+      - ./.env:/app/.env
